@@ -1,0 +1,65 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+*.manifest
+*.spec
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Database (contains real student data)
+*.db
+*.sqlite3
+*.sqlite
+
+# Logs
+*.log
+logs/
+
+# Claude Code
+.claude/
+
+# Project documentation (development notes)
+PROJECT_MEMORY.md
+PLAN.md
+
+# Backup / deprecated code
+backup_crud_feature/
+
+# Import artifacts
+import_errors_*.log
+import_summary_*.txt
+
+# Settings (local overrides)
+settings.local.json
+
+# Student face data directories
+23人工智能*/
+[0-9]_*/
+[0-9][0-9]_*/
+train/
+test/
+val/
+
+# OS junk
+$RECYCLE.BIN/
+System Volume Information/
