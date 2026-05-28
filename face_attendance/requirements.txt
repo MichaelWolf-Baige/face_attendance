@@ -1,0 +1,22 @@
+# 人脸识别考勤系统依赖
+
+# GUI框架
+PyQt5>=5.15.0
+
+# 图像处理
+opencv-python>=4.5.0
+numpy>=1.19.0
+Pillow>=8.0.0
+
+# 人脸识别 (InsightFace + ONNX Runtime)
+insightface>=0.7.0
+onnxruntime>=1.16.0
+
+# 数据库
+SQLAlchemy>=1.4.0
+
+# Excel导出
+openpyxl>=3.0.0
+
+# 密码安全
+bcrypt>=4.0.0
