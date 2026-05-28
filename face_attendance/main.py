@@ -4,6 +4,7 @@
 """
 import sys
 import os
+import argparse
 
 # CUDA/cuDNN DLL PATH（onnxruntime-gpu 需要，CPU 版本自动跳过）
 _site_packages = os.path.join(sys.prefix, 'Lib', 'site-packages')
@@ -21,6 +22,19 @@ except ImportError as e:
     print(f"当前 Python: {sys.executable}")
     input("按 Enter 退出...")
     sys.exit(1)
+
+import config
+
+# 解析命令行参数，在 AppContext 创建前确定性能配置
+parser = argparse.ArgumentParser(description='人脸识别考勤系统')
+parser.add_argument('--cpu', action='store_const', const='cpu', dest='profile',
+                    help='强制低配模式 (集成显卡/老电脑)')
+parser.add_argument('--gpu', action='store_const', const='gpu', dest='profile',
+                    help='强制高性能模式 (需要 NVIDIA 显卡)')
+args, _ = parser.parse_known_args()
+if args.profile:
+    config.PERFORMANCE_PROFILE = args.profile
+config.auto_detect_profile()
 
 from PyQt5.QtWidgets import QApplication, QMessageBox
 from PyQt5.QtCore import Qt

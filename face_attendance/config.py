@@ -56,6 +56,43 @@ LOG_LEVEL = 'INFO'  # 日志级别: DEBUG, INFO, WARNING, ERROR
 # 数据配置
 DATA_DIR = os.path.dirname(BASE_DIR)  # 数据目录(学生照片)
 
+# 性能配置 ('auto' | 'gpu' | 'cpu')
+PERFORMANCE_PROFILE = 'auto'
+
+
+def auto_detect_profile(profile: str = None):
+    """根据性能配置选择人脸识别模型和参数"""
+    if profile is None:
+        profile = PERFORMANCE_PROFILE
+
+    if profile == 'cpu':
+        _apply_cpu_profile()
+        return
+    if profile == 'gpu':
+        print("[性能] 强制 GPU 模式 (buffalo_l + 640)")
+        return
+
+    # 'auto': 自动检测 GPU
+    try:
+        import onnxruntime as ort
+        if 'CUDAExecutionProvider' in ort.get_available_providers():
+            print("[性能] 检测到 GPU，使用高性能模式 (buffalo_l + 640)")
+            return
+    except Exception:
+        pass
+    _apply_cpu_profile()
+
+
+def _apply_cpu_profile():
+    global FACE_MODEL_NAME, FACE_DET_SIZE
+    global FACE_ATTENDANCE_RESIZE_SCALE, ATTENDANCE_FRAME_SKIP
+    FACE_MODEL_NAME = 'buffalo_sc'
+    FACE_DET_SIZE = (320, 320)
+    FACE_ATTENDANCE_RESIZE_SCALE = 0.5
+    ATTENDANCE_FRAME_SKIP = 5
+    print("[性能] 未检测到 GPU，已切换轻量配置 (buffalo_sc + 320 + 0.5缩放)")
+
+
 # 从外部配置文件加载覆盖值 (可选)
 import json
 _CONFIG_FILE = os.path.join(BASE_DIR, 'settings.json')
