@@ -8,8 +8,10 @@
 
 ## 功能特性
 
+- **GPU/CPU 自动适配** — 启动时自动检测显卡，有 GPU 用高精度模型，无 GPU 自动切轻量模型
 - **实时人脸识别考勤** — 摄像头实时检测人脸，自动匹配数据库并记录打卡
 - **多目标跟踪** — IoU + 投票机制平滑识别结果，消除单帧误识别
+- **实时 FPS 显示** — 界面显示画面帧率和识别推理帧率
 - **手动补签** — 教师可从名单中批量选择未打卡学生进行补签，支持搜索过滤
 - **学生管理** — 人脸注册（多角度质量加权编码）、增删改查、批量导入
 - **课程管理** — 创建课程、设定上课时间，按时段自动判断迟到
@@ -21,7 +23,7 @@
 
 | 类别 | 技术 |
 |------|------|
-| 人脸识别 | InsightFace (buffalo_l: SCRFD 检测 + ArcFace ResNet50 编码) |
+| 人脸识别 | InsightFace (GPU: buffalo_l / CPU: buffalo_sc 自动切换) |
 | 推理引擎 | ONNX Runtime（CPU / GPU 自动检测） |
 | GUI 框架 | PyQt5 |
 | 数据库 | SQLite + SQLAlchemy ORM |
@@ -68,13 +70,23 @@ pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 **第三步：启动**
 
-```bash
-python main.py
+Windows 双击 `start.bat`，会弹出性能模式选择菜单：
+
+```
+[1] Auto-detect (recommended)   ← 自动检测 GPU，推荐
+[2] GPU mode (NVIDIA required)  ← 强制高精度模型
+[3] CPU mode (integrated graphics)
 ```
 
-或 Windows 直接双击 `start.bat`。
+或命令行：
 
-首次启动 InsightFace 会自动下载模型文件（约 200MB），放在 `~/.insightface/` 目录，仅需下载一次。
+```bash
+python main.py            # 自动检测
+python main.py --gpu      # 强制 GPU 模式 (buffalo_l)
+python main.py --cpu      # 强制 CPU 模式 (buffalo_sc)
+```
+
+首次启动 InsightFace 会自动下载模型文件（约 200MB GPU / 70MB CPU），放在 `~/.insightface/` 目录，仅需下载一次。
 
 ### 登录
 
@@ -84,19 +96,27 @@ python main.py
 
 ## 安装常见问题
 
+### Q: 如何启用 GPU 加速
+
+系统启动时会自动检测。如果检测不到，检查：
+
+```bash
+python -c "import onnxruntime; print(onnxruntime.get_available_providers())"
+```
+
+如果输出中没有 `CUDAExecutionProvider`：
+
+```bash
+pip uninstall onnxruntime -y
+pip install onnxruntime-gpu
+```
+
+NVIDIA 显卡用户安装 GPU 版本后，推理速度提升 3-5 倍。
+
 ### Q: 提示 `Unable to import dependency onnxruntime`
 
 ```bash
 pip install onnxruntime insightface
-```
-
-### Q: 提示 `DLL load failed while importing onnxruntime_pybind11_state`
-
-Windows 上 onnxruntime 的 DLL 可能与其他库冲突导致初始化失败。重装即可解决：
-
-```bash
-pip uninstall onnxruntime -y
-pip install onnxruntime
 ```
 
 ### Q: pip 安装报错 / 速度极慢
@@ -208,11 +228,11 @@ face_attendance/
 
 | 参数 | 默认值 | 说明 |
 |------|--------|------|
+| `PERFORMANCE_PROFILE` | auto | 性能模式：auto / gpu / cpu |
 | `FACE_RECOGNITION_TOLERANCE` | 0.55 | 人脸匹配置信阈值（降低=更宽松） |
 | `ATTENDANCE_COOLDOWN` | 10 | 同一学生打卡冷却时间(秒) |
 | `LATE_THRESHOLD_MINUTES` | 15 | 上课后多少分钟算迟到 |
-| `ATTENDANCE_FRAME_SKIP` | 10 | 每 N 帧做一次识别 |
-| `FACE_MODEL_NAME` | buffalo_l | InsightFace 模型（高精度） |
+| `FACE_MODEL_NAME` | buffalo_l | GPU 用 buffalo_l，CPU 自动切 buffalo_sc |
 | `CAMERA_INDEX` | 0 | 摄像头编号（多摄像头时修改） |
 
 ## License
