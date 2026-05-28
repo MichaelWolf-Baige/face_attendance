@@ -6,7 +6,7 @@
 import os
 import sys
 
-# CUDA/cuDNN DLL PATH 注册（与 main.py 保持一致）
+# CUDA/cuDNN DLL PATH（onnxruntime-gpu 需要，CPU 版本自动跳过）
 _site_packages = os.path.join(sys.prefix, 'Lib', 'site-packages')
 for _lib in ['nvidia/cudnn/bin', 'nvidia/cublas/bin']:
     _path = os.path.join(_site_packages, _lib)

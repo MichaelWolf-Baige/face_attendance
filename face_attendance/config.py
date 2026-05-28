@@ -16,15 +16,7 @@ DATABASE_PATH = os.path.join(BASE_DIR, 'face_attendance.db')
 FACE_RECOGNITION_CONFIDENT = 0.55   # 高置信阈值
 FACE_RECOGNITION_UNCERTAIN = 0.55   # 不再有不确定区
 FACE_RECOGNITION_TOLERANCE = 0.55   # 统一阈值
-FACE_ATTENDANCE_RESIZE_SCALE = 0.5   # 考勤缩放 (1280→640, 减少CPU resize负担)
-
-# 图像预处理配置 (CLAHE光照归一化，教室场景核心优化)
-# ⚠️ 启用前必须重新导入所有学生数据，否则注册编码和考勤编码域不匹配，置信度会下降
-#    操作: 设为True → 删除 face_attendance.db → 重新运行 import_all_data.py
-FACE_PREPROCESSING_ENABLED = False      # 启用 CLAHE 预处理（需重注册）
-FACE_PREPROCESSING_CLAHE_CLIP = 2.0     # CLAHE 对比度限制 (1.5~3.0, 教室推荐2.0)
-FACE_PREPROCESSING_CLAHE_TILE = (8, 8)  # CLAHE 网格 (教室推荐8x8)
-FACE_PREPROCESSING_DENOISE = True       # 轻度降噪
+FACE_ATTENDANCE_RESIZE_SCALE = 1   # 考勤缩放 (1280→640, 减少CPU resize负担)
 
 # 多图注册配置
 FACE_REGISTRATION_SHOTS = 3  # 注册时拍摄张数 (取平均encoding)

@@ -4,6 +4,7 @@
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![GPU](https://img.shields.io/badge/GPU-optional-orange)](#)
 
 ## 功能特性
 
@@ -21,7 +22,7 @@
 | 类别 | 技术 |
 |------|------|
 | 人脸识别 | InsightFace (buffalo_l: SCRFD 检测 + ArcFace ResNet50 编码) |
-| 推理引擎 | ONNX Runtime |
+| 推理引擎 | ONNX Runtime（CPU / GPU 自动检测） |
 | GUI 框架 | PyQt5 |
 | 数据库 | SQLite + SQLAlchemy ORM |
 | 图像处理 | OpenCV + PIL |
@@ -32,7 +33,7 @@
 
 ### 环境要求
 
-- **Python 3.10 或更高版本**（推荐 3.12）
+- **Python 3.10 或更高版本**
 - Windows / macOS / Linux 均可
 - 摄像头（用于实时考勤，非必须——无摄像头也能用管理功能）
 
@@ -88,8 +89,6 @@ python main.py
 ```bash
 pip install onnxruntime insightface
 ```
-
-如果还不行，**不要用 Python 3.13**（onnxruntime 目前不兼容 Python 3.13），改用 Python 3.10-3.12。
 
 ### Q: pip 安装报错 / 速度极慢
 
@@ -181,8 +180,7 @@ face_attendance/
 └── utils/                  # 工具模块
     ├── camera.py           #   摄像头线程
     ├── excel_exporter.py   #   Excel 导出
-    ├── security.py         #   密码哈希
-    └── preprocessing.py    #   图像预处理
+    └── security.py        #   密码哈希
 ```
 
 ## 核心流程

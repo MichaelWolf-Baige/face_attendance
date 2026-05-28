@@ -2,14 +2,12 @@
 人脸特征提取模块
 使用 InsightFace ArcFace 512维特征向量 + 5点关键点对齐
 集成 FaceAligner 进行姿态估计和质量评估
-集成 CLAHE 光照预处理提升教室环境鲁棒性
 """
 import cv2
 import numpy as np
 from typing import List, Tuple, Optional
 import config
 from utils.logger import get_logger
-from utils.preprocessing import preprocess_face, preprocess_face_region
 from .face_aligner import FaceAligner
 
 logger = get_logger(__name__)
@@ -97,19 +95,11 @@ class FaceEncoder:
         scale = resize_scale if resize_scale is not None else config.FACE_ATTENDANCE_RESIZE_SCALE
         h, w = image.shape[:2]
 
-        # 先缩放再处理，避免在全分辨率上做 CLAHE 拖死 CPU
+        # 先缩放再处理
         if scale != 1.0:
             small = cv2.resize(image, (int(w * scale), int(h * scale)))
         else:
             small = image
-
-        # CLAHE 光照预处理 (在缩略图上做，CPU友好)
-        preprocess_enabled = getattr(config, 'FACE_PREPROCESSING_ENABLED', False)
-        if preprocess_enabled:
-            clahe_clip = getattr(config, 'FACE_PREPROCESSING_CLAHE_CLIP', 2.0)
-            clahe_tile = getattr(config, 'FACE_PREPROCESSING_CLAHE_TILE', (8, 8))
-            small = preprocess_face(small, clip_limit=clahe_clip,
-                                    tile_size=clahe_tile, denoise=False)
 
         try:
             model = _get_face_model()
@@ -184,13 +174,6 @@ class FaceEncoder:
             top, right, bottom, left = face_location
             h, w = image.shape[:2]
 
-            # CLAHE 预处理（在 face_region 上做，不是全图）
-            preprocess_enabled = getattr(config, 'FACE_PREPROCESSING_ENABLED', False)
-            if preprocess_enabled:
-                clahe_clip = getattr(config, 'FACE_PREPROCESSING_CLAHE_CLIP', 2.0)
-                clahe_tile = getattr(config, 'FACE_PREPROCESSING_CLAHE_TILE', (8, 8))
-                image = preprocess_face(image, clip_limit=clahe_clip, tile_size=clahe_tile, denoise=False)
-
             pad_t = max(0, top - 20)
             pad_b = min(h, bottom + 20)
             pad_l = max(0, left - 20)
@@ -220,15 +203,10 @@ class FaceEncoder:
 
         model = _get_face_model()
         encodings = []
-        preprocess_enabled = getattr(config, 'FACE_PREPROCESSING_ENABLED', False)
-        clahe_clip = getattr(config, 'FACE_PREPROCESSING_CLAHE_CLIP', 2.0)
-        clahe_tile = getattr(config, 'FACE_PREPROCESSING_CLAHE_TILE', (8, 8))
         for img in images:
             if img is None or img.size == 0:
                 continue
             try:
-                if preprocess_enabled:
-                    img = preprocess_face(img, clip_limit=clahe_clip, tile_size=clahe_tile, denoise=False)
                 faces = model.get(img, max_num=1)
                 if faces:
                     emb = faces[0].embedding
@@ -394,13 +372,6 @@ class FaceEncoder:
             return None
 
         try:
-            preprocess_enabled = getattr(config, 'FACE_PREPROCESSING_ENABLED', False)
-            if preprocess_enabled:
-                clahe_clip = getattr(config, 'FACE_PREPROCESSING_CLAHE_CLIP', 2.0)
-                clahe_tile = getattr(config, 'FACE_PREPROCESSING_CLAHE_TILE', (8, 8))
-                face_image = preprocess_face(face_image, clip_limit=clahe_clip,
-                                             tile_size=clahe_tile, denoise=False)
-
             model = _get_face_model()
             faces = model.get(face_image, max_num=1)
             if faces:

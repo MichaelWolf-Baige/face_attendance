@@ -7,24 +7,32 @@ echo.
 
 cd /d "%~dp0"
 
-REM 优先使用 py launcher 指定 Python 3.12（避免 3.13 没装依赖的问题）
-set PYTHON_CMD=python
-where py >nul 2>&1
+REM 自动选择合适的 Python（优先 python，其次 py launcher）
+set PYTHON_CMD=
+where python >nul 2>&1
 if %errorlevel% equ 0 (
-    py -3.12 -c "exit" >nul 2>&1
+    set PYTHON_CMD=python
+) else (
+    where py >nul 2>&1
     if %errorlevel% equ 0 (
-        set PYTHON_CMD=py -3.12
-        echo 使用 Python 3.12
+        set PYTHON_CMD=py
     )
 )
 
+if "%PYTHON_CMD%"=="" (
+    echo [错误] 未找到 Python，请先安装 Python 3.10+
+    echo 下载地址: https://www.python.org/downloads/
+    pause
+    exit /b 1
+)
+
+echo 使用: %PYTHON_CMD%
 echo 正在启动系统...
 %PYTHON_CMD% main.py
 
 if %errorlevel% neq 0 (
     echo.
-    echo 启动失败，请检查依赖是否安装:
-    echo   pip install -r requirements.txt
-    echo   py -3.12 -m pip install -r requirements.txt
+    echo 启动失败！请检查依赖是否安装:
+    echo   %PYTHON_CMD% -m pip install -r requirements.txt
     pause
 )

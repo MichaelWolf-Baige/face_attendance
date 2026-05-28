@@ -20,3 +20,6 @@ openpyxl>=3.0.0
 
 # 密码安全
 bcrypt>=4.0.0
+
+# 可选: GPU 加速 (NVIDIA 显卡用户)
+# pip install onnxruntime-gpu
