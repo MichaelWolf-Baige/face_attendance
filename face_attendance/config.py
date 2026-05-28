@@ -31,7 +31,7 @@ FACE_MODEL_NAME = 'buffalo_l'      # buffalo_l (ResNet50,高精度) / buffalo_sc
 FACE_DET_SIZE = (640, 640)         # 检测输入尺寸 (640→人脸框更准→ArcFace编码更准)
 
 # 考勤帧处理配置
-ATTENDANCE_FRAME_SKIP = 10  # 每N帧处理一次 (10=约3fps, 跟踪器保证不丢人)
+ATTENDANCE_FRAME_SKIP = 1   # 每N帧处理一次 (1=不跳帧，充分利用GPU)
 FACE_MIN_FACE_SIZE = 80     # 最小人脸像素尺寸 (用于质量过滤)
 
 # 摄像头配置
@@ -89,7 +89,7 @@ def _apply_cpu_profile():
     FACE_MODEL_NAME = 'buffalo_sc'
     FACE_DET_SIZE = (320, 320)
     FACE_ATTENDANCE_RESIZE_SCALE = 0.5
-    ATTENDANCE_FRAME_SKIP = 5
+    ATTENDANCE_FRAME_SKIP = 1
     print("[性能] 未检测到 GPU，已切换轻量配置 (buffalo_sc + 320 + 0.5缩放)")
 
 

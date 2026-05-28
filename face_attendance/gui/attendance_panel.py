@@ -129,6 +129,11 @@ class AttendancePanel(QWidget):
         self._cached_display = None  # 缓存绘制好的帧，结果不变时直接复用
         self._cached_pixmap = None  # 缓存QPixmap，避免每帧重复创建
         self._last_data_ptr = None  # 跟踪帧数据指针，判断是否需要重建QPixmap
+        self._fps_t0 = time.time()       # FPS 计时起点
+        self._fps_display_count = 0      # 显示帧数
+        self._fps_recog_count = 0        # 识别帧数
+        self._fps_display = 0            # 当前显示 FPS
+        self._fps_recog = 0              # 当前识别 FPS
 
         # 初始化UI
         self.init_ui()
@@ -185,6 +190,19 @@ class AttendancePanel(QWidget):
         """)
         self.video_label.setScaledContents(False)
         video_layout.addWidget(self.video_label)
+
+        # FPS 显示标签
+        self.fps_label = QLabel("FPS: --")
+        self.fps_label.setAlignment(Qt.AlignCenter)
+        self.fps_label.setStyleSheet(f"""
+            QLabel {{
+                color: {COLORS['text_secondary']};
+                font-size: 11px;
+                background: transparent;
+                border: none;
+            }}
+        """)
+        video_layout.addWidget(self.fps_label)
 
         # 课程选择区域
         course_frame = QFrame()
@@ -583,6 +601,9 @@ class AttendancePanel(QWidget):
         self._cached_display = None
         self._last_drawn_results = None
         self.last_results = []
+        self.fps_label.setText("FPS: --")
+        self._fps_display_count = 0
+        self._fps_recog_count = 0
         # 停止摄像头线程
         if self.camera_thread:
             self.camera_thread.stop()
@@ -605,6 +626,19 @@ class AttendancePanel(QWidget):
         self.current_frame = frame
         self._frame_counter += 1
 
+        # FPS 统计
+        t = time.time()
+        self._fps_display_count += 1
+        if t - self._fps_t0 >= 1.0:
+            self._fps_display = self._fps_display_count / (t - self._fps_t0)
+            self._fps_recog = self._fps_recog_count / (t - self._fps_t0)
+            self._fps_display_count = 0
+            self._fps_recog_count = 0
+            self._fps_t0 = t
+            self.fps_label.setText(
+                f"Display: {self._fps_display:.0f} fps  |  Recognition: {self._fps_recog:.0f} fps"
+            )
+
         # 识别: 每N帧处理一次
         if self.recognition_thread and self._frame_counter % getattr(config, 'ATTENDANCE_FRAME_SKIP', 10) == 0:
             self.recognition_thread.add_frame(frame)
@@ -614,6 +648,7 @@ class AttendancePanel(QWidget):
 
     def on_recognition_result(self, results):
         """识别结果就绪 - 结果持久化，不清除旧结果"""
+        self._fps_recog_count += 1
         logger.debug(f"收到识别结果: {len(results)} 人, {[r.get('name') for r in results]}")
         # 有结果才更新，空结果保留上次识别的人名不闪
         if results:
