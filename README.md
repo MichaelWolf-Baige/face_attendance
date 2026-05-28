@@ -90,6 +90,15 @@ python main.py
 pip install onnxruntime insightface
 ```
 
+### Q: 提示 `DLL load failed while importing onnxruntime_pybind11_state`
+
+Windows 上 onnxruntime 的 DLL 可能与其他库冲突导致初始化失败。重装即可解决：
+
+```bash
+pip uninstall onnxruntime -y
+pip install onnxruntime
+```
+
 ### Q: pip 安装报错 / 速度极慢
 
 国内网络用清华镜像：
